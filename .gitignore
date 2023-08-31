@@ -1,0 +1,24 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+wheels/
+share/python-wheels/
+*.egg-info/
+*.egg
+MANIFEST
+.vagrant/
+
+# Scikit-build build directory
+_skbuild/
+
+# C++ module for leflib gets installed in leflib/ after running pip install -e .
+_leflib.*.so

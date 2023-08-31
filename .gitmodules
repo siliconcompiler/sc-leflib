@@ -1,0 +1,3 @@
+[submodule "siliconcompiler"]
+	path = siliconcompiler
+	url = ../siliconcompiler

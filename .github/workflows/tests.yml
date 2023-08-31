@@ -1,0 +1,42 @@
+name: 'CI Tests'
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  python_test_job:
+    timeout-minutes: 15
+    runs-on: ${{ matrix.version.os }}
+    name: 'Pure Python tests'
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - {python: "3.6", os: "ubuntu-20.04"}
+          - {python: "3.7", os: "ubuntu-latest"}
+          - {python: "3.8", os: "ubuntu-latest"}
+          - {python: "3.9", os: "ubuntu-latest"}
+          - {python: "3.10", os: "ubuntu-latest"}
+          - {python: "3.11", os: "ubuntu-latest"}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install graphviz
+
+      - name: Set up Python ${{ matrix.version.python }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.version.python }}
+          cache: pip
+
+      - name: Run Python tests
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -e .[test]
+          pytest
