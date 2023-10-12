@@ -58,7 +58,7 @@ jobs:
         brew install flex
         echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
 
-    - uses: pypa/cibuildwheel@v2.12.1
+    - uses: pypa/cibuildwheel@v2.16
       env:
         CIBW_BEFORE_ALL_LINUX: |
           yum --disablerepo=epel -y update ca-certificates
@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: [cp36-cp36m, cp37-cp37m, cp38-cp38, cp39-cp39, cp310-cp310, cp311-cp311]
+        python: [cp38-cp38, cp39-cp39, cp310-cp310, cp311-cp311, cp312-cp312]
     steps:
     - uses: actions/download-artifact@v3
       with:
