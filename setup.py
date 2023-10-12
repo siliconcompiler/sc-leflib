@@ -77,7 +77,7 @@ setup(
     version=get_version(),
     packages=["sc_leflib"],
 
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=install_reqs,
     extras_require=extras_req,
     **skbuild_args
