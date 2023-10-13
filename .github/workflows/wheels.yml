@@ -140,3 +140,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         path: deps*.tar.gz
+
+    - name: Add wheels to GitHub release artifacts
+      uses: softprops/action-gh-release@v1
+      with:
+        files: deps*.tar.gz
