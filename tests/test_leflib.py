@@ -1,18 +1,13 @@
-import sc_leflib
-
 import os
+from lambdapdk import sky130
+import sc_leflib
+from siliconcompiler import Chip
 
 
 def test_leflib(scroot):
-    path = os.path.join(scroot,
-                        'third_party',
-                        'pdks',
-                        'skywater',
-                        'skywater130',
-                        'pdk',
-                        'v0_0_2',
-                        'apr',
-                        'sky130_fd_sc_hd.tlef')
+    chip = Chip('test')
+    chip.use(sky130)
+    path = chip.find_files('pdk', 'skywater130', 'aprtech', 'openroad', '5M1LI', 'hd', 'lef')[0]
 
     data = sc_leflib.parse(path)
     assert data['version'] == 5.7

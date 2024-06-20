@@ -1,5 +1,13 @@
+# Build dependencies
+#:build
+scikit-build >= 0.14.1
+cython
+cmake
+
 # Testing dependencies
 #:test
-pytest == 6.2.4
-pytest-timeout == 2.1.0
-flake8 == 5.0.0
+pytest >= 6.2.4
+pytest-timeout >= 2.1.0
+flake8 >= 5.0.0
+lambdapdk == 0.1.23
+siliconcompiler >= 0.23.2

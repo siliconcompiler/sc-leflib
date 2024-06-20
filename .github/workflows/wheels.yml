@@ -2,6 +2,7 @@ name: Wheels
 
 on:
   workflow_dispatch:
+  pull_request:
   release:
     types:
       - published
@@ -23,7 +24,7 @@ jobs:
             arch: x86_64
           - os: ubuntu-latest
             arch: aarch64
-          - os: macos-latest
+          - os: macos-13
             arch: universal
           - os: windows-latest
             arch: x86_64
@@ -35,6 +36,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
+        fetch-depth: 0
 
     # This facilitates building Linux+arm64 wheels
     # https://cibuildwheel.readthedocs.io/en/stable/faq/#emulation
@@ -51,7 +53,7 @@ jobs:
         vcpkg install zlib zlib:x64-windows
 
     - name: Setup env (macOS)
-      if: matrix.platform.os == 'macos-latest'
+      if: matrix.platform.os == 'macos-13'
       run: |
         brew install bison
         # https://github.com/The-OpenROAD-Project/OpenROAD/issues/1688
