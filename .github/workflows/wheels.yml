@@ -99,6 +99,7 @@ jobs:
       with:
         pattern: sc-leflib-*
         path: dist
+        merge-multiple: true
 
     - uses: pypa/gh-action-pypi-publish@v1.9.0
       with:
@@ -109,14 +110,13 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: dist/*.whl
-  
+
   package_offline:
     # We want to run this on the official PEP Python-wheel building platform to
     # ensure the downloaded wheels have the broadest compatibility. Using the
     # '--platform' tag for 'pip download' doesn't work for us, since it requires
     # setting --only-binary=:all: and some of our deps aren't available as
     # wheels on some platforms.
-    container: quay.io/pypa/manylinux2014_x86_64
     needs: [build_wheels]
     runs-on: ubuntu-latest
     strategy:
@@ -128,22 +128,38 @@ jobs:
       with:
         pattern: sc-leflib-*
         path: dist
+        merge-multiple: true
 
-    - name: Package sc-leflib
+    - name: Package SC
       run: |
-        mkdir deps
-        $python -m pip download pip -d deps
-        $python -m pip download ./dist/sc_leflib*${{matrix.python}}*linux*x86_64.whl -d deps
-        tar -czvf deps-${{matrix.python}}.tar.gz deps
+        docker run --name sc_package -dit quay.io/pypa/manylinux2014_x86_64:latest
+
+        docker cp ./dist/sc-leflib*${{matrix.python}}*linux*x86_64.whl sc_package:/
+
+        export wheel=$(docker exec sc_package bash -c "ls sc_leflib*")
+
+        docker exec sc_package mkdir sc_leflib_dependencies
+        docker exec sc_package $python -m pip download pip -d sc_leflib_dependencies
+        docker exec sc_package $python -m pip download $wheel -d sc_leflib_dependencies
+        docker exec sc_package tar czvf sc_leflib_dependencies-${{matrix.python}}.tar.gz sc_leflib_dependencies $wheel
+
+        docker cp sc_package:sc_leflib_dependencies-${{matrix.python}}.tar.gz ./
+
+        docker stop sc_package
+        docker rm sc_package
+
       env:
         python: /opt/python/${{matrix.python}}/bin/python
 
     - name: Upload package
       uses: actions/upload-artifact@v4
       with:
-        path: deps*.tar.gz
+        name: sc_leflib_plus_dependencies-${{matrix.python}}
+        path: sc_leflib_dependencies*.tar.gz
+        retention-days: 14
 
     - name: Add wheels to GitHub release artifacts
+      if: github.event_name == 'release' && github.event.action == 'published' && !contains(github.event.release.body, 'NOPUBLISH')
       uses: softprops/action-gh-release@v2
       with:
-        files: deps*.tar.gz
+        files: sc_leflib_dependencies*.tar.gz
