@@ -130,7 +130,7 @@ jobs:
         path: dist
         merge-multiple: true
 
-    - name: Package SC
+    - name: Package SC-leflib
       run: |
         docker run --name sc_package -dit quay.io/pypa/manylinux2014_x86_64:latest
 
