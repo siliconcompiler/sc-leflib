@@ -1,11 +1,11 @@
 # Build dependencies
 #:build
-scikit-build >= 0.14.1
-cython
-cmake
+scikit-build == 0.14.1
+cython == 0.29.35
+cmake == 3.26.4
 
 # Testing dependencies
 #:test
-pytest >= 6.2.4
-pytest-timeout >= 2.1.0
-flake8 >= 5.0.0
+pytest == 6.2.4
+pytest-timeout == 2.1.0
+flake8 == 5.0.0
