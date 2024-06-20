@@ -134,7 +134,7 @@ jobs:
       run: |
         docker run --name sc_package -dit quay.io/pypa/manylinux2014_x86_64:latest
 
-        docker cp ./dist/sc-leflib*${{matrix.python}}*linux*x86_64.whl sc_package:/
+        docker cp ./dist/sc_leflib*${{matrix.python}}*linux*x86_64.whl sc_package:/
 
         export wheel=$(docker exec sc_package bash -c "ls sc_leflib*")
 
