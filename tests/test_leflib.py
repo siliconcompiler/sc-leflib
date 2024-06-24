@@ -2,8 +2,10 @@ import os
 from lambdapdk import sky130
 import sc_leflib
 from siliconcompiler import Chip
+import pytest
 
 
+@pytest.mark.timeout(300)
 def test_leflib(scroot):
     chip = Chip('test')
     chip.use(sky130)
