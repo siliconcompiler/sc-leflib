@@ -7,6 +7,10 @@ on:
     types:
       - published
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # Ensures wheels are compatible with macOS 10.15+
 env:
   MACOSX_DEPLOYMENT_TARGET: "10.15"
