@@ -35,6 +35,7 @@ jobs:
         with:
           python-version: ${{ matrix.version.python }}
           cache: pip
+          allow-prereleases: true
 
       - name: Run Python tests
         run: |
