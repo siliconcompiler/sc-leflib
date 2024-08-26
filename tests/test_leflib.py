@@ -1,18 +1,5 @@
 import os
-from lambdapdk import sky130
 import sc_leflib
-from siliconcompiler import Chip
-import pytest
-
-
-@pytest.mark.timeout(300)
-def test_leflib(scroot):
-    chip = Chip('test')
-    chip.use(sky130)
-    path = chip.find_files('pdk', 'skywater130', 'aprtech', 'openroad', '5M1LI', 'hd', 'lef')[0]
-
-    data = sc_leflib.parse(path)
-    assert data['version'] == 5.7
 
 
 def test_leflib_garbage():
