@@ -1,5 +1,5 @@
 # Testing dependencies
 #:test
-pytest == 6.2.4
-pytest-timeout == 2.1.0
-flake8 == 7.0.0
+pytest == 8.3.3
+pytest-timeout == 2.3.1
+flake8 == 7.1.1
