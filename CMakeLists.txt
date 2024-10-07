@@ -13,7 +13,7 @@ find_package(PythonLibs)
 find_package(PythonExtensions)
 find_package(Cython REQUIRED)
 
-set(TOOLS_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/siliconcompiler/setup/_tools.py)
+set(TOOLS_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/siliconcompiler/siliconcompiler/toolscripts/_tools.py)
 
 execute_process(
   COMMAND python3 ${TOOLS_SCRIPT} --tool openroad --field git-url
