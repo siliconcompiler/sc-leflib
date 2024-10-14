@@ -14,3 +14,6 @@ testpaths = [
     "tests"
 ]
 timeout = "120"
+addopts = [
+    "--import-mode=importlib",
+]

@@ -52,4 +52,4 @@ jobs:
           mkdir testrun
           cd testrun
 
-          pytest --import-mode=importlib $GITHUB_WORKSPACE
+          pytest $GITHUB_WORKSPACE
