@@ -42,6 +42,14 @@ jobs:
 
       - name: Run Python tests
         run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+
           python3 -m pip install --upgrade pip
           python3 -m pip install .[test]
-          pytest
+
+          # change running directory
+          mkdir testrun
+          cd testrun
+
+          pytest $GITHUB_WORKSPACE

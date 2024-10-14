@@ -10,5 +10,10 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-testpaths = "tests"
+testpaths = [
+    "tests"
+]
 timeout = "120"
+addopts = [
+    "--import-mode=importlib",
+]
