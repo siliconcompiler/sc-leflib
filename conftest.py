@@ -1,3 +1,4 @@
 collect_ignore = [
-    "siliconcompiler/"
+    "siliconcompiler/",
+    "_skbuild/"
 ]
