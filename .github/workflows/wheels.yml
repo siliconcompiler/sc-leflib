@@ -109,7 +109,7 @@ jobs:
         path: dist
         merge-multiple: true
 
-    - uses: pypa/gh-action-pypi-publish@v1.10.3
+    - uses: pypa/gh-action-pypi-publish@v1.11.0
 
     - name: Add wheels to GitHub release artifacts
       uses: softprops/action-gh-release@v2
