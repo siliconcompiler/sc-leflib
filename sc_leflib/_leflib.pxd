@@ -19,76 +19,86 @@ ctypedef void* lefiUserData
 
 # These typedefs define the function signatures of each LEF parser callback.
 # (Order same as in lefrReader.hpp)
-ctypedef int (*lefrVoidCbkFnType) (lefrCallbackType_e,
-                                  void* num,
-                                  lefiUserData);
-ctypedef int (*lefrStringCbkFnType) (lefrCallbackType_e,
-                                    const char *string,
-                                    lefiUserData);
-ctypedef int (*lefrIntegerCbkFnType) (lefrCallbackType_e,
-                                     int number,
-                                     lefiUserData);
-ctypedef int (*lefrDoubleCbkFnType) (lefrCallbackType_e,
-                                    double number,
-                                    lefiUserData);
-ctypedef int (*lefrUnitsCbkFnType) (lefrCallbackType_e,
-                                   lefiUnits* units,
-                                   lefiUserData);
-ctypedef int (*lefrLayerCbkFnType) (lefrCallbackType_e,
-                                   lefiLayer* l,
-                                   lefiUserData);
-ctypedef int (*lefrViaRuleCbkFnType) (lefrCallbackType_e,
-                                     lefiViaRule* l,
-                                     lefiUserData);
-ctypedef int (*lefrSiteCbkFnType) (lefrCallbackType_e,
-                                  lefiSite* l,
-                                  lefiUserData);
-ctypedef int (*lefrMacroCbkFnType) (lefrCallbackType_e,
-                                   lefiMacro* l,
-                                   lefiUserData);
-ctypedef int (*lefrPinCbkFnType) (lefrCallbackType_e,
-                                 lefiPin* l,
-                                 lefiUserData);
-ctypedef int (*lefrObstructionCbkFnType) (lefrCallbackType_e,
-                                         lefiObstruction* l,
-                                         lefiUserData);
-ctypedef int (*lefrUseMinSpacingCbkFnType) (lefrCallbackType_e,
-                                           lefiUseMinSpacing* l,
-                                           lefiUserData);
-ctypedef int (*lefrMaxStackViaCbkFnType) (lefrCallbackType_e,
-                                         lefiMaxStackVia* l,
-                                         lefiUserData);
 
 ctypedef void (*LEFI_LOG_FUNCTION) (const char*);
 ctypedef void (*LEFI_WARNING_LOG_FUNCTION) (const char*);
 
+# Must declare everything we reference from lefiMisc.hpp here
+cdef extern from "lefiMisc.hpp" namespace "LefParser":
+    # Structs defining generic geometries
+    cdef struct lefiGeomRect:
+        double xl
+        double yl
+        double xh
+        double yh
+        int colorMask
+
+    cdef struct lefiGeomRectIter:
+        double xl
+        double yl
+        double xh
+        double yh
+        double xStart
+        double yStart
+        double xStep
+        double yStep
+        int    colorMask
+
+    cdef struct lefiGeomPath:
+        int numPoints
+        double* x
+        double* y
+        int colorMask
+
+    cdef struct lefiGeomPathIter:
+        int numPoints
+        double* x
+        double* y
+        double xStart
+        double yStart
+        double xStep
+        double yStep
+        int colorMask
+
+    cdef struct lefiGeomPolygon:
+        int numPoints
+        double* x
+        double* y
+        int colorMask
+
+    cdef struct lefiGeomPolygonIter:
+        int numPoints
+        double* x
+        double* y
+        double xStart
+        double yStart
+        double xStep
+        double yStep
+        int colorMask
+
+    cdef struct lefiGeomVia:
+        char* name
+        double x
+        double y
+        int topMaskNum
+        int cutMaskNum
+        int bottomMaskNum
+
+    cdef struct lefiGeomViaIter:
+        char* name
+        double x
+        double y
+        double xStart
+        double yStart
+        double xStep
+        double yStep
+        int topMaskNum
+        int cutMaskNum
+        int bottomMaskNum
+
+
 # Must declare everything we reference from lefrReader.hpp here
-cdef extern from "lefrReader.hpp":
-    int lefrInit()
-    int lefrRead (FILE *file, const char *fileName, void* userData)
-
-    # Callback setters
-    void lefrSetVersionCbk(lefrDoubleCbkFnType)
-    void lefrSetBusBitCharsCbk(lefrStringCbkFnType)
-    void lefrSetDividerCharCbk(lefrStringCbkFnType)
-    void lefrSetUnitsCbk(lefrUnitsCbkFnType)
-    void lefrSetManufacturingCbk(lefrDoubleCbkFnType)
-    void lefrSetUseMinSpacingCbk(lefrUseMinSpacingCbkFnType)
-    void lefrSetClearanceMeasureCbk(lefrStringCbkFnType)
-    void lefrSetFixedMaskCbk(lefrIntegerCbkFnType)
-    void lefrSetLayerCbk(lefrLayerCbkFnType)
-    void lefrSetMaxStackViaCbk(lefrMaxStackViaCbkFnType)
-    void lefrSetViaRuleCbk(lefrViaRuleCbkFnType)
-    void lefrSetSiteCbk(lefrSiteCbkFnType)
-    void lefrSetMacroBeginCbk(lefrStringCbkFnType)
-    void lefrSetPinCbk(lefrPinCbkFnType)
-    void lefrSetObstructionCbk(lefrObstructionCbkFnType)
-    void lefrSetMacroCbk(lefrMacroCbkFnType)
-
-    # Additional callbacks
-    void lefrSetLogFunction(LEFI_LOG_FUNCTION)
-    void lefrSetWarningLogFunction(LEFI_WARNING_LOG_FUNCTION)
-
+cdef extern from "lefrReader.hpp" namespace "LefParser":
     # Some enums we need to reference
     ctypedef enum lefrCallbackType_e:
        lefrUnspecifiedCbkType,
@@ -150,6 +160,71 @@ cdef extern from "lefrReader.hpp":
        lefrMacroSiteCbkType,
        lefrMacroForeignCbkType,
        lefrLibraryEndCbkType
+
+    ctypedef int (*lefrVoidCbkFnType) (lefrCallbackType_e,
+                                    void* num,
+                                    lefiUserData);
+    ctypedef int (*lefrStringCbkFnType) (lefrCallbackType_e,
+                                        const char *string,
+                                        lefiUserData);
+    ctypedef int (*lefrIntegerCbkFnType) (lefrCallbackType_e,
+                                        int number,
+                                        lefiUserData);
+    ctypedef int (*lefrDoubleCbkFnType) (lefrCallbackType_e,
+                                        double number,
+                                        lefiUserData);
+    ctypedef int (*lefrUnitsCbkFnType) (lefrCallbackType_e,
+                                    lefiUnits* units,
+                                    lefiUserData);
+    ctypedef int (*lefrLayerCbkFnType) (lefrCallbackType_e,
+                                    lefiLayer* l,
+                                    lefiUserData);
+    ctypedef int (*lefrViaRuleCbkFnType) (lefrCallbackType_e,
+                                        lefiViaRule* l,
+                                        lefiUserData);
+    ctypedef int (*lefrSiteCbkFnType) (lefrCallbackType_e,
+                                    lefiSite* l,
+                                    lefiUserData);
+    ctypedef int (*lefrMacroCbkFnType) (lefrCallbackType_e,
+                                    lefiMacro* l,
+                                    lefiUserData);
+    ctypedef int (*lefrPinCbkFnType) (lefrCallbackType_e,
+                                    lefiPin* l,
+                                    lefiUserData);
+    ctypedef int (*lefrObstructionCbkFnType) (lefrCallbackType_e,
+                                            lefiObstruction* l,
+                                            lefiUserData);
+    ctypedef int (*lefrUseMinSpacingCbkFnType) (lefrCallbackType_e,
+                                            lefiUseMinSpacing* l,
+                                            lefiUserData);
+    ctypedef int (*lefrMaxStackViaCbkFnType) (lefrCallbackType_e,
+                                            lefiMaxStackVia* l,
+                                            lefiUserData);
+
+    int lefrInit()
+    int lefrRead (FILE *file, const char *fileName, void* userData)
+
+    # Callback setters
+    void lefrSetVersionCbk(lefrDoubleCbkFnType)
+    void lefrSetBusBitCharsCbk(lefrStringCbkFnType)
+    void lefrSetDividerCharCbk(lefrStringCbkFnType)
+    void lefrSetUnitsCbk(lefrUnitsCbkFnType)
+    void lefrSetManufacturingCbk(lefrDoubleCbkFnType)
+    void lefrSetUseMinSpacingCbk(lefrUseMinSpacingCbkFnType)
+    void lefrSetClearanceMeasureCbk(lefrStringCbkFnType)
+    void lefrSetFixedMaskCbk(lefrIntegerCbkFnType)
+    void lefrSetLayerCbk(lefrLayerCbkFnType)
+    void lefrSetMaxStackViaCbk(lefrMaxStackViaCbkFnType)
+    void lefrSetViaRuleCbk(lefrViaRuleCbkFnType)
+    void lefrSetSiteCbk(lefrSiteCbkFnType)
+    void lefrSetMacroBeginCbk(lefrStringCbkFnType)
+    void lefrSetPinCbk(lefrPinCbkFnType)
+    void lefrSetObstructionCbk(lefrObstructionCbkFnType)
+    void lefrSetMacroCbk(lefrMacroCbkFnType)
+
+    # Additional callbacks
+    void lefrSetLogFunction(LEFI_LOG_FUNCTION)
+    void lefrSetWarningLogFunction(LEFI_WARNING_LOG_FUNCTION)
 
     cdef enum lefiGeomEnum:
         lefiGeomUnknown,
@@ -316,74 +391,3 @@ cdef extern from "lefrReader.hpp":
         lefiGeomViaIter* getViaIter(int index)
 
         const char* getClass(int index)
-
-    # Structs defining generic geometries
-    cdef struct lefiGeomRect:
-        double xl
-        double yl
-        double xh
-        double yh
-        int colorMask
-
-    cdef struct lefiGeomRectIter:
-        double xl
-        double yl
-        double xh
-        double yh
-        double xStart
-        double yStart
-        double xStep
-        double yStep
-        int    colorMask
-
-    cdef struct lefiGeomPath:
-        int numPoints
-        double* x
-        double* y
-        int colorMask
-
-    cdef struct lefiGeomPathIter:
-        int numPoints
-        double* x
-        double* y
-        double xStart
-        double yStart
-        double xStep
-        double yStep
-        int colorMask
-
-    cdef struct lefiGeomPolygon:
-        int numPoints
-        double* x
-        double* y
-        int colorMask
-
-    cdef struct lefiGeomPolygonIter:
-        int numPoints
-        double* x
-        double* y
-        double xStart
-        double yStart
-        double xStep
-        double yStep
-        int colorMask
-
-    cdef struct lefiGeomVia:
-        char* name
-        double x
-        double y
-        int topMaskNum
-        int cutMaskNum
-        int bottomMaskNum
-
-    cdef struct lefiGeomViaIter:
-        char* name
-        double x
-        double y
-        double xStart
-        double yStart
-        double xStep
-        double yStep
-        int topMaskNum
-        int cutMaskNum
-        int bottomMaskNum
