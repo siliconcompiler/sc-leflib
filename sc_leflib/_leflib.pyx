@@ -129,7 +129,7 @@ _state = ParserState()
 # it is handled gracefully by printing out the error and returning an error code
 # to the LEF parser, which will terminate parsing early and cause lefrRead() to
 # return an error code downstream.
-cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data):
+cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['version'] = value
     except Exception:
@@ -137,7 +137,7 @@ cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data)
         return 1
     return 0
 
-cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data):
+cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['busbitchars'] = val.decode('ascii')
     except Exception:
@@ -145,7 +145,7 @@ cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserDa
         return 1
     return 0
 
-cdef int divider_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data):
+cdef int divider_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['dividerchar'] = val.decode('ascii')
     except Exception:
@@ -153,7 +153,7 @@ cdef int divider_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserD
         return 1
     return 0
 
-cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data):
+cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data) noexcept:
     try:
         if 'units' not in _state.data:
             _state.data['units'] = OrderedDict()
@@ -179,7 +179,7 @@ cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data):
         return 1
     return 0
 
-cdef int manufacturing_grid_cb(lefrCallbackType_e cb_type, double value, lefiUserData data):
+cdef int manufacturing_grid_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['manufacturinggrid'] = value
     except Exception:
@@ -187,7 +187,7 @@ cdef int manufacturing_grid_cb(lefrCallbackType_e cb_type, double value, lefiUse
         return 1
     return 0
 
-cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minspacing, lefiUserData data):
+cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minspacing, lefiUserData data) noexcept:
     try:
         if 'useminspacing' not in _state.data:
             _state.data['useminspacing'] = OrderedDict()
@@ -206,7 +206,7 @@ cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minsp
         return 1
     return 0
 
-cdef int clearance_measure_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data):
+cdef int clearance_measure_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['clearancemeasure'] = val.decode('ascii')
     except Exception:
@@ -214,7 +214,7 @@ cdef int clearance_measure_cb(lefrCallbackType_e cb_type, const char* val, lefiU
         return 1
     return 0
 
-cdef int fixed_mask_cb(lefrCallbackType_e cb_type, int val, lefiUserData data):
+cdef int fixed_mask_cb(lefrCallbackType_e cb_type, int val, lefiUserData data) noexcept:
     try:
         # I think val should always be 1.
         _state.data['fixedmask'] = val == 1
@@ -223,7 +223,7 @@ cdef int fixed_mask_cb(lefrCallbackType_e cb_type, int val, lefiUserData data):
         return 1
     return 0
 
-cdef int layer_cb(lefrCallbackType_e cb_type, lefiLayer* layer, lefiUserData data):
+cdef int layer_cb(lefrCallbackType_e cb_type, lefiLayer* layer, lefiUserData data) noexcept:
     try:
         if 'layers' not in _state.data:
             _state.data['layers'] = OrderedDict()
@@ -252,7 +252,7 @@ cdef int layer_cb(lefrCallbackType_e cb_type, lefiLayer* layer, lefiUserData dat
         return 1
     return 0
 
-cdef int max_via_stack_cb(lefrCallbackType_e cb_type, lefiMaxStackVia* maxstackvia, lefiUserData data):
+cdef int max_via_stack_cb(lefrCallbackType_e cb_type, lefiMaxStackVia* maxstackvia, lefiUserData data) noexcept:
     try:
         _state.data['maxviastack'] = {
             'value': maxstackvia.maxStackVia(),
@@ -268,7 +268,7 @@ cdef int max_via_stack_cb(lefrCallbackType_e cb_type, lefiMaxStackVia* maxstackv
         return 1
     return 0
 
-cdef int viarule_cb(lefrCallbackType_e cb_type, lefiViaRule* viarule, void* data):
+cdef int viarule_cb(lefrCallbackType_e cb_type, lefiViaRule* viarule, void* data) noexcept:
     try:
         if 'viarules' not in _state.data:
             _state.data['viarules'] = OrderedDict()
@@ -327,7 +327,7 @@ cdef int viarule_cb(lefrCallbackType_e cb_type, lefiViaRule* viarule, void* data
         return 1
     return 0
 
-cdef int site_cb(lefrCallbackType_e cb_type, lefiSite* site, lefiUserData data):
+cdef int site_cb(lefrCallbackType_e cb_type, lefiSite* site, lefiUserData data) noexcept:
     try:
         if 'sites' not in _state.data:
             _state.data['sites'] = OrderedDict()
@@ -374,7 +374,7 @@ cdef int site_cb(lefrCallbackType_e cb_type, lefiSite* site, lefiUserData data):
 # `obs_cb` are then called for each PIN and OBS statement in the current macro,
 # and finally `macro_cb` is called with the remaining information for the
 # current macro.
-cdef int macro_begin_cb(lefrCallbackType_e cb_type, const char* name, lefiUserData data):
+cdef int macro_begin_cb(lefrCallbackType_e cb_type, const char* name, lefiUserData data) noexcept:
     try:
         if 'macros' not in _state.data:
             _state.data['macros'] = OrderedDict()
@@ -386,7 +386,7 @@ cdef int macro_begin_cb(lefrCallbackType_e cb_type, const char* name, lefiUserDa
         return 1
     return 0
 
-cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data):
+cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data) noexcept:
     try:
         if 'pins' not in _state.data['macros'][_state.cur_macro]:
             _state.data['macros'][_state.cur_macro]['pins'] = {}
@@ -421,7 +421,7 @@ cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data):
         return 1
     return 0
 
-cdef int obs_cb(lefrCallbackType_e cb_type, lefiObstruction* obs, lefiUserData data):
+cdef int obs_cb(lefrCallbackType_e cb_type, lefiObstruction* obs, lefiUserData data) noexcept:
     try:
         if 'obs' not in _state.data['macros'][_state.cur_macro]:
             _state.data['macros'][_state.cur_macro]['obs'] = []
@@ -436,7 +436,7 @@ cdef int obs_cb(lefrCallbackType_e cb_type, lefiObstruction* obs, lefiUserData d
         return 1
     return 0
 
-cdef int macro_cb(lefrCallbackType_e cb_type, lefiMacro* macro, void* data):
+cdef int macro_cb(lefrCallbackType_e cb_type, lefiMacro* macro, void* data) noexcept:
     try:
         if macro.hasSize():
             _state.data['macros'][_state.cur_macro]['size'] = {
