@@ -13,27 +13,6 @@ find_package(PythonLibs)
 find_package(PythonExtensions)
 find_package(Cython REQUIRED)
 
-set(TOOLS_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/siliconcompiler/siliconcompiler/toolscripts/_tools.py)
-
-execute_process(
-  COMMAND python3 ${TOOLS_SCRIPT} --tool openroad --field git-url
-  OUTPUT_VARIABLE openroad_URL
-)
-string(STRIP ${openroad_URL} openroad_URL)
-execute_process(
-  COMMAND python3 ${TOOLS_SCRIPT} --tool openroad --field git-commit
-  OUTPUT_VARIABLE openroad_COMMIT
-)
-string(STRIP ${openroad_COMMIT} openroad_COMMIT)
-
-include(FetchContent)
-FetchContent_Declare(openroad
-  GIT_REPOSITORY    ${openroad_URL}
-  GIT_TAG           ${openroad_COMMIT}
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND     ""
-)
-
 # Needed to find *.pxd file
 include_directories(${CMAKE_CURRENT_LIST_DIR}/sc_leflib)
 
@@ -62,9 +41,8 @@ if(NOT WIN32)
     target_compile_options(_leflib PRIVATE -Wall -Werror -Wno-error=deprecated-declarations)
 endif()
 
-FetchContent_Populate(openroad)
 # Stuff to include Si2 LEF library
-set(LEF_DIR ${openroad_SOURCE_DIR}/src/odb/src/lef)
+set(LEF_DIR ${CMAKE_CURRENT_LIST_DIR}/lef)
 
 # this lets us include lef headers
 include_directories(${LEF_DIR}/lef)
