@@ -23,7 +23,7 @@ jobs:
           - {python: "3.12", os: "ubuntu-latest"}
           - {python: "3.13", os: "ubuntu-latest"}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           fetch-depth: 0
