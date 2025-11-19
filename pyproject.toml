@@ -17,3 +17,6 @@ timeout = "120"
 addopts = [
     "--import-mode=importlib",
 ]
+
+[tool.cibuildwheel]
+free-threaded-support = false
