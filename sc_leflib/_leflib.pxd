@@ -368,6 +368,10 @@ cdef extern from "lefrReader.hpp" namespace "LefParser":
 
     cdef cppclass lefiPin:
         const char* name()
+        int hasUse()
+        const char* use()
+        int hasDirection()
+        const char* direction()
         int numPorts()
         lefiGeometries* port(int index)
 

@@ -102,6 +102,8 @@ def test_leflib_complete(datadir):
     assert chk3a['size'] == {'width': 10.8, 'height': 28.8}
     assert len(chk3a['pins']) == 7
     vdd = chk3a['pins']['VDD']
+    assert vdd['direction'] == "INOUT"
+    assert vdd['use'] == "POWER"
     assert len(vdd['ports']) == 2
     port = vdd['ports'][1]
     assert port['class'] == 'NONE'
