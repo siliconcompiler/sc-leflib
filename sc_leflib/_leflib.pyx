@@ -394,6 +394,14 @@ cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data) noe
         name = pin.name().decode('ascii')
         _state.data['macros'][_state.cur_macro]['pins'][name] = {}
 
+        if pin.hasDirection():
+            direction = pin.direction().decode('ascii')
+            _state.data['macros'][_state.cur_macro]['pins'][name]['direction'] = direction
+
+        if pin.hasUse():
+            use = pin.use().decode('ascii')
+            _state.data['macros'][_state.cur_macro]['pins'][name]['use'] = use
+
         ports = []
         for i in range(pin.numPorts()):
             port = pin.port(i)
