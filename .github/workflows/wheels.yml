@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [cp39, cp310, cp311, cp312, cp313]
+        python-version: [cp39, cp310, cp311, cp312, cp313, cp314]
         platform:
           - os: ubuntu-latest
             arch: x86_64
@@ -57,7 +57,7 @@ jobs:
         brew install flex
         echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
 
-    - uses: pypa/cibuildwheel@v3.2
+    - uses: pypa/cibuildwheel@v3.3.0
       env:
         CIBW_BEFORE_ALL_LINUX: |
           yum --disablerepo=epel -y update ca-certificates
@@ -68,7 +68,7 @@ jobs:
           CPPFLAGS="-I/usr/local/opt/flex/include"
         CIBW_ENVIRONMENT_WINDOWS: SC_CMAKEARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake."
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-        CIBW_BUILD: ${{ matrix.python-version }}*
+        CIBW_BUILD: ${{ matrix.python-version }}-*
         CIBW_SKIP: "pp* *win32 *i686 *-musllinux_*"
         CIBW_ARCHS_MACOS: x86_64 arm64
         CIBW_TEST_SKIP: "*_arm64"
