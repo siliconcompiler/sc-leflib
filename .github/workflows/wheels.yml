@@ -37,7 +37,7 @@ jobs:
       CIBW_ARCHS_LINUX: ${{ matrix.platform.arch }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: true
         fetch-depth: 0
