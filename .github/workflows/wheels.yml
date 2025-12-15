@@ -55,9 +55,9 @@ jobs:
       run: |
         brew install bison
         # https://github.com/The-OpenROAD-Project/OpenROAD/issues/1688
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+        echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
         brew install flex
-        echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+        echo "/opt/homebrew/opt/flex/bin" >> $GITHUB_PATH
 
     - uses: pypa/cibuildwheel@v3.3.0
       env:
@@ -66,8 +66,8 @@ jobs:
           yum install -y zlib-devel wget
         CIBW_BEFORE_BUILD_WINDOWS: if exist "{package}\\_skbuild\" rd /q /s  "{package}\\_skbuild"
         CIBW_ENVIRONMENT_MACOS: >
-          LDFLAGS="-L/usr/local/opt/bison/lib -L/usr/local/opt/flex/lib"
-          CPPFLAGS="-I/usr/local/opt/flex/include"
+          LDFLAGS="-L/opt/homebrew/opt/bison/lib -L/opt/homebrew/opt/flex/lib"
+          CPPFLAGS="-I/opt/homebrew/opt/flex/include"
         CIBW_ENVIRONMENT_WINDOWS: SC_CMAKEARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake."
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BUILD: ${{ matrix.python-version }}-*
