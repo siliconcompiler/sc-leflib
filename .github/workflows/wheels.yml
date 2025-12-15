@@ -24,14 +24,16 @@ jobs:
       matrix:
         python-version: [cp39, cp310, cp311, cp312, cp313, cp314]
         platform:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             arch: x86_64
           - os: ubuntu-24.04-arm
             arch: aarch64
-          - os: macos-13
-            arch: universal
+          - os: macos-latest
+            arch: x86_64
           - os: windows-latest
             arch: x86_64
+        exclude:
+          - { python-version: "cp39", platform: {os: "macos-latest", arch: "x86_64"} }
 
     env:
       CIBW_ARCHS_LINUX: ${{ matrix.platform.arch }}
@@ -49,13 +51,13 @@ jobs:
         vcpkg install zlib zlib:x64-windows
 
     - name: Setup env (macOS)
-      if: matrix.platform.os == 'macos-13'
+      if: matrix.platform.os == 'macos-latest'
       run: |
         brew install bison
         # https://github.com/The-OpenROAD-Project/OpenROAD/issues/1688
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+        echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
         brew install flex
-        echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+        echo "/opt/homebrew/opt/flex/bin" >> $GITHUB_PATH
 
     - uses: pypa/cibuildwheel@v3.3.0
       env:
@@ -64,8 +66,8 @@ jobs:
           yum install -y zlib-devel wget
         CIBW_BEFORE_BUILD_WINDOWS: if exist "{package}\\_skbuild\" rd /q /s  "{package}\\_skbuild"
         CIBW_ENVIRONMENT_MACOS: >
-          LDFLAGS="-L/usr/local/opt/bison/lib -L/usr/local/opt/flex/lib"
-          CPPFLAGS="-I/usr/local/opt/flex/include"
+          LDFLAGS="-L/opt/homebrew/opt/bison/lib -L/opt/homebrew/opt/flex/lib"
+          CPPFLAGS="-I/opt/homebrew/opt/flex/include"
         CIBW_ENVIRONMENT_WINDOWS: SC_CMAKEARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake."
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BUILD: ${{ matrix.python-version }}-*
