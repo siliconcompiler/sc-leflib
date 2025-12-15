@@ -24,14 +24,16 @@ jobs:
       matrix:
         python-version: [cp39, cp310, cp311, cp312, cp313, cp314]
         platform:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             arch: x86_64
           - os: ubuntu-24.04-arm
             arch: aarch64
-          - os: macos-13
-            arch: universal
+          - os: macos-latest
+            arch: x86_64
           - os: windows-latest
             arch: x86_64
+        exclude:
+          - { python-version: "cp39", platform: {os: "macos-latest", arch: "x86_64"} }
 
     env:
       CIBW_ARCHS_LINUX: ${{ matrix.platform.arch }}
@@ -49,7 +51,7 @@ jobs:
         vcpkg install zlib zlib:x64-windows
 
     - name: Setup env (macOS)
-      if: matrix.platform.os == 'macos-13'
+      if: matrix.platform.os == 'macos-latest'
       run: |
         brew install bison
         # https://github.com/The-OpenROAD-Project/OpenROAD/issues/1688
