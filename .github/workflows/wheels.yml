@@ -59,7 +59,7 @@ jobs:
         brew install flex
         echo "/opt/homebrew/opt/flex/bin" >> $GITHUB_PATH
 
-    - uses: pypa/cibuildwheel@v3.3.0
+    - uses: pypa/cibuildwheel@v3.3.1
       env:
         CIBW_BEFORE_ALL_LINUX: |
           yum --disablerepo=epel -y update ca-certificates
