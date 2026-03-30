@@ -29,5 +29,6 @@ jobs:
           python3 -m venv .venv
           . .venv/bin/activate
 
-          python3 -m pip install flake8 -c ./requirements.txt
+          python3 -m pip install --upgrade pip
+          python3 -m pip install .[test]
           flake8 --statistics .

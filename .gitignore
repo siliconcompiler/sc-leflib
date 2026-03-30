@@ -19,6 +19,11 @@ MANIFEST
 
 # Scikit-build build directory
 _skbuild/
+build.ninja
+
+.venv/
 
 # C++ module for leflib gets installed in leflib/ after running pip install -e .
 _leflib.*.so
+
+sc_leflib/_version.py

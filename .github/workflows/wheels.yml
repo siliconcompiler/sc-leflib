@@ -68,7 +68,7 @@ jobs:
         CIBW_ENVIRONMENT_MACOS: >
           LDFLAGS="-L/opt/homebrew/opt/bison/lib -L/opt/homebrew/opt/flex/lib"
           CPPFLAGS="-I/opt/homebrew/opt/flex/include"
-        CIBW_ENVIRONMENT_WINDOWS: SC_CMAKEARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake."
+        CIBW_ENVIRONMENT_WINDOWS: CMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BUILD: ${{ matrix.python-version }}-*
         CIBW_SKIP: "pp* *win32 *i686 *-musllinux_*"
