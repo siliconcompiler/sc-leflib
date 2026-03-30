@@ -22,3 +22,5 @@ _skbuild/
 
 # C++ module for leflib gets installed in leflib/ after running pip install -e .
 _leflib.*.so
+
+sc_leflib/_version.py

@@ -1,5 +1,10 @@
 from ._leflib import parse as _parse
 
+try:
+    from sc_leflib._version import __version__
+except ImportError:
+    __version__ = None
+
 
 def parse(path):
     ''' Parses LEF file.
