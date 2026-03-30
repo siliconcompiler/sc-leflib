@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "setuptools>=80",
-    "scikit-build>=0.12",
+    "setuptools >= 80",
+    "scikit-build >= 0.12",
     "wheel",
     "cython",
     "cmake"
