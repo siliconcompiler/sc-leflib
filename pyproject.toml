@@ -1,11 +1,10 @@
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools>=80",
+    "scikit-build>=0.12",
     "wheel",
     "cython",
-    "scikit-build>=0.12",
-    "cmake",
-    "setuptools_scm>=6.2"
+    "cmake"
 ]
 build-backend = "setuptools.build_meta"
 
