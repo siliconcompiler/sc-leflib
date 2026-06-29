@@ -39,7 +39,7 @@ jobs:
       CIBW_ARCHS_LINUX: ${{ matrix.platform.arch }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: true
         fetch-depth: 0
@@ -59,7 +59,7 @@ jobs:
         brew install flex
         echo "/opt/homebrew/opt/flex/bin" >> $GITHUB_PATH
 
-    - uses: pypa/cibuildwheel@v4.0.0
+    - uses: pypa/cibuildwheel@v4.1.0
       env:
         CIBW_BEFORE_ALL_LINUX: |
           yum --disablerepo=epel -y update ca-certificates
