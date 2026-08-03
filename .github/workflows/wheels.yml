@@ -59,7 +59,7 @@ jobs:
         brew install flex
         echo "/opt/homebrew/opt/flex/bin" >> $GITHUB_PATH
 
-    - uses: pypa/cibuildwheel@v4.1.0
+    - uses: pypa/cibuildwheel@v4.1.1
       env:
         CIBW_BEFORE_ALL_LINUX: |
           yum --disablerepo=epel -y update ca-certificates
@@ -103,7 +103,7 @@ jobs:
         path: dist
         merge-multiple: true
 
-    - uses: pypa/gh-action-pypi-publish@v1.14.0
+    - uses: pypa/gh-action-pypi-publish@v1.14.2
 
     - name: Add wheels to GitHub release artifacts
       uses: softprops/action-gh-release@v3
