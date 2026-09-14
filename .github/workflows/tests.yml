@@ -29,11 +29,6 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install graphviz
-
       - name: Set up Python ${{ matrix.version.python }}
         uses: actions/setup-python@v7
         with:
