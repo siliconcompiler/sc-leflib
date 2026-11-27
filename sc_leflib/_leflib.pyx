@@ -157,7 +157,7 @@ _state = ParserState()
 # Note that each of these functions contains the block:
 # try:
 #    ...
-# except Exception as e:
+# except BaseException as e:
 #    _state.store_exception(e)
 #    return 1
 # return 0
@@ -169,7 +169,7 @@ _state = ParserState()
 cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['version'] = value
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -177,7 +177,7 @@ cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data)
 cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['busbitchars'] = val.decode('ascii')
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -185,7 +185,7 @@ cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserDa
 cdef int divider_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['dividerchar'] = val.decode('ascii')
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -211,7 +211,7 @@ cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data) noe
             _state.data['units']['voltage'] = units.voltage()
         if units.hasFrequency():
             _state.data['units']['frequency'] = units.frequency()
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -219,7 +219,7 @@ cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data) noe
 cdef int manufacturing_grid_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['manufacturinggrid'] = value
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -238,7 +238,7 @@ cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minsp
             val = 'OFF'
 
         _state.data['useminspacing'][name] = val
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -246,7 +246,7 @@ cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minsp
 cdef int clearance_measure_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['clearancemeasure'] = val.decode('ascii')
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -255,7 +255,7 @@ cdef int fixed_mask_cb(lefrCallbackType_e cb_type, int val, lefiUserData data) n
     try:
         # I think val should always be 1.
         _state.data['fixedmask'] = val == 1
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -284,7 +284,7 @@ cdef int layer_cb(lefrCallbackType_e cb_type, lefiLayer* layer, lefiUserData dat
             _state.data['layers'][name]['area'] = layer.area()
         if layer.hasDirection():
             _state.data['layers'][name]['direction'] = layer.direction().decode()
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -300,7 +300,7 @@ cdef int max_via_stack_cb(lefrCallbackType_e cb_type, lefiMaxStackVia* maxstackv
                 'bottom': maxstackvia.maxStackViaBottomLayer().decode('ascii'),
                 'top': maxstackvia.maxStackViaTopLayer().decode('ascii')
             }
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -359,7 +359,7 @@ cdef int viarule_cb(lefrCallbackType_e cb_type, lefiViaRule* viarule, void* data
 
         name = viarule.name().decode('ascii')
         _state.data['viarules'][name] = viarule_data
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -400,7 +400,7 @@ cdef int site_cb(lefrCallbackType_e cb_type, lefiSite* site, lefiUserData data) 
 
         name = site.name().decode('ascii')
         _state.data['sites'][name] = site_data
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -418,7 +418,7 @@ cdef int macro_begin_cb(lefrCallbackType_e cb_type, const char* name, lefiUserDa
 
         _state.cur_macro = name.decode('ascii')
         _state.data['macros'][_state.cur_macro] = {}
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -461,7 +461,7 @@ cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data) noe
 
         if len(ports) > 0:
             _state.data['macros'][_state.cur_macro]['pins'][name]['ports'] = ports
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -476,7 +476,7 @@ cdef int obs_cb(lefrCallbackType_e cb_type, lefiObstruction* obs, lefiUserData d
         # Append geometries even if empty so that the dictionary reflects how
         # many OBS appear in the LEF (even if they're empty).
         _state.data['macros'][_state.cur_macro]['obs'].append(geometries)
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -488,7 +488,7 @@ cdef int macro_cb(lefrCallbackType_e cb_type, lefiMacro* macro, void* data) noex
                 'width': macro.sizeX(),
                 'height': macro.sizeY()
             }
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 1
     return 0
@@ -617,7 +617,7 @@ cdef void error_log_cb(const char* msg) noexcept:
         if lineno is None and lefrLineNumber() > 0:
             lineno = lefrLineNumber()
         _state.errors.append((text, lineno))
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
 
 # The parser reads through this instead of fread(), so read errors raise the
@@ -627,7 +627,7 @@ cdef size_t read_cb(FILE* unused, char* buf, size_t size) noexcept:
     try:
         chunk = _state.file.read(size)
         memcpy(buf, <const char*> chunk, len(chunk))
-    except Exception as e:
+    except BaseException as e:
         _state.store_exception(e)
         return 0
     return len(chunk)
