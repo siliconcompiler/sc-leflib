@@ -1,4 +1,5 @@
 from ._leflib import parse as _parse
+from ._leflib import LefParseError  # noqa: F401
 
 try:
     from sc_leflib._version import __version__
@@ -10,8 +11,9 @@ def parse(path):
     ''' Parses LEF file.
 
     Given a path to a LEF file, this function parses the file and returns a
-    dictionary representing the contents of the LEF file. If there's an error
-    while reading or parsing the file, this function returns None instead.
+    dictionary representing the contents of the LEF file. If the file can't be
+    read, this function raises :class:`OSError` like :func:`open` does; if it
+    can't be parsed, :class:`LefParseError`.
 
     Note that this function does not return all information contained in the
     LEF. The subset of information returned includes:
@@ -165,7 +167,7 @@ def parse(path):
     present in the dictionary.
 
     Args:
-        path (str): Path to LEF file to parse.
+        path (str or os.PathLike): Path to LEF file to parse.
     '''
 
     return _parse(path)

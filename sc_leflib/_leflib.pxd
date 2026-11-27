@@ -22,6 +22,7 @@ ctypedef void* lefiUserData
 
 ctypedef void (*LEFI_LOG_FUNCTION) (const char*);
 ctypedef void (*LEFI_WARNING_LOG_FUNCTION) (const char*);
+ctypedef size_t (*LEFI_READ_FUNCTION) (FILE*, char*, size_t);
 
 # Must declare everything we reference from lefiMisc.hpp here
 cdef extern from "lefiMisc.hpp" namespace "LefParser":
@@ -203,6 +204,7 @@ cdef extern from "lefrReader.hpp" namespace "LefParser":
 
     int lefrInit()
     int lefrRead (FILE *file, const char *fileName, void* userData)
+    int lefrLineNumber()
 
     # Callback setters
     void lefrSetVersionCbk(lefrDoubleCbkFnType)
@@ -225,6 +227,7 @@ cdef extern from "lefrReader.hpp" namespace "LefParser":
     # Additional callbacks
     void lefrSetLogFunction(LEFI_LOG_FUNCTION)
     void lefrSetWarningLogFunction(LEFI_WARNING_LOG_FUNCTION)
+    void lefrSetReadFunction(LEFI_READ_FUNCTION)
 
     cdef enum lefiGeomEnum:
         lefiGeomUnknown,

@@ -51,14 +51,15 @@ Helpful resources:
 - LEF API docs: http://coriolis.lip6.fr/doc/lefdef/lefapi/lefapi.pdf
 '''
 
-# This let us use libc file I/O to communicate with the C++ lef library.
-from libc.stdio cimport fopen, fclose
+from libc.stdio cimport FILE
+from libc.string cimport memcpy
 
 # This imports the type/function declarations found in _leflib.pxd.
 cimport _leflib
 
 import cython
-import traceback
+import os
+import re
 
 from collections import OrderedDict
 
@@ -99,6 +100,21 @@ IterableGeometry = cython.fused_type(
     cython.pointer(lefiGeomViaIter)
 )
 
+class LefParseError(ValueError):
+    ''' Raised by :func:`sc_leflib.parse` when the LEF parser rejects a file.
+
+    The message is the parser's first error. ``filename`` and ``lineno`` locate
+    it; ``lineno`` is None if unknown.
+    '''
+
+    def __init__(self, msg, filename=None, lineno=None):
+        super().__init__(msg)
+        self.filename = filename
+        self.lineno = lineno
+
+# Lets autodoc pick it up as part of sc_leflib.
+LefParseError.__module__ = 'sc_leflib'
+
 # We hold parsed LEF data in a global that gets cleared by parse() on each call.
 # The intended use of the LEF parser library is to pass around this data
 # structure via the void* passed into each callback, but using a global lets us
@@ -110,6 +126,27 @@ class ParserState:
     def clear(self):
         self.data = {}
         self.cur_macro = None
+        self.file = None
+        self.filename_bytes = b''
+        # (message, lineno) for each error the parser reports.
+        self.errors = []
+        # The C++ parser can't propagate exceptions, so callbacks store the
+        # first one here for parse() to re-raise.
+        self.exception = None
+
+    def store_exception(self, exc):
+        if self.exception is None:
+            self.exception = exc
+
+def _error_lineno(text, filename_bytes):
+    # Parse "file <name> at line <n>" from the message: lefrLineNumber() is
+    # one line ahead for some errors.
+    key = 'file %s at line ' % filename_bytes.decode('utf-8', 'backslashreplace')
+    idx = text.find(key)
+    if idx < 0:
+        return None
+    m = re.match(r'\d+', text[idx + len(key):])
+    return int(m.group(0)) if m else None
 
 _state = ParserState()
 
@@ -120,36 +157,36 @@ _state = ParserState()
 # Note that each of these functions contains the block:
 # try:
 #    ...
-# except Exception:
-#    traceback.print_exc()
+# except BaseException as e:
+#    _state.store_exception(e)
 #    return 1
 # return 0
 #
 # This ensures that if any sort of Python exception occurs during the callback,
-# it is handled gracefully by printing out the error and returning an error code
-# to the LEF parser, which will terminate parsing early and cause lefrRead() to
-# return an error code downstream.
+# it is stored for parse() to re-raise, and an error code is returned to the LEF
+# parser, which will terminate parsing early and cause lefrRead() to return an
+# error code downstream.
 cdef int version_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['version'] = value
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
 cdef int busbit_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['busbitchars'] = val.decode('ascii')
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
 cdef int divider_chars_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['dividerchar'] = val.decode('ascii')
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -174,16 +211,16 @@ cdef int units_cb(lefrCallbackType_e t, lefiUnits* units, lefiUserData data) noe
             _state.data['units']['voltage'] = units.voltage()
         if units.hasFrequency():
             _state.data['units']['frequency'] = units.frequency()
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
 cdef int manufacturing_grid_cb(lefrCallbackType_e cb_type, double value, lefiUserData data) noexcept:
     try:
         _state.data['manufacturinggrid'] = value
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -201,16 +238,16 @@ cdef int use_min_spacing_cb(lefrCallbackType_e cb_type, lefiUseMinSpacing* minsp
             val = 'OFF'
 
         _state.data['useminspacing'][name] = val
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
 cdef int clearance_measure_cb(lefrCallbackType_e cb_type, const char* val, lefiUserData data) noexcept:
     try:
         _state.data['clearancemeasure'] = val.decode('ascii')
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -218,8 +255,8 @@ cdef int fixed_mask_cb(lefrCallbackType_e cb_type, int val, lefiUserData data) n
     try:
         # I think val should always be 1.
         _state.data['fixedmask'] = val == 1
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -247,8 +284,8 @@ cdef int layer_cb(lefrCallbackType_e cb_type, lefiLayer* layer, lefiUserData dat
             _state.data['layers'][name]['area'] = layer.area()
         if layer.hasDirection():
             _state.data['layers'][name]['direction'] = layer.direction().decode()
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -263,8 +300,8 @@ cdef int max_via_stack_cb(lefrCallbackType_e cb_type, lefiMaxStackVia* maxstackv
                 'bottom': maxstackvia.maxStackViaBottomLayer().decode('ascii'),
                 'top': maxstackvia.maxStackViaTopLayer().decode('ascii')
             }
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -322,8 +359,8 @@ cdef int viarule_cb(lefrCallbackType_e cb_type, lefiViaRule* viarule, void* data
 
         name = viarule.name().decode('ascii')
         _state.data['viarules'][name] = viarule_data
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -363,8 +400,8 @@ cdef int site_cb(lefrCallbackType_e cb_type, lefiSite* site, lefiUserData data) 
 
         name = site.name().decode('ascii')
         _state.data['sites'][name] = site_data
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -381,8 +418,8 @@ cdef int macro_begin_cb(lefrCallbackType_e cb_type, const char* name, lefiUserDa
 
         _state.cur_macro = name.decode('ascii')
         _state.data['macros'][_state.cur_macro] = {}
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -424,8 +461,8 @@ cdef int pin_cb(lefrCallbackType_e cb_type, lefiPin* pin, lefiUserData data) noe
 
         if len(ports) > 0:
             _state.data['macros'][_state.cur_macro]['pins'][name]['ports'] = ports
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -439,8 +476,8 @@ cdef int obs_cb(lefrCallbackType_e cb_type, lefiObstruction* obs, lefiUserData d
         # Append geometries even if empty so that the dictionary reflects how
         # many OBS appear in the LEF (even if they're empty).
         _state.data['macros'][_state.cur_macro]['obs'].append(geometries)
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -451,8 +488,8 @@ cdef int macro_cb(lefrCallbackType_e cb_type, lefiMacro* macro, void* data) noex
                 'width': macro.sizeX(),
                 'height': macro.sizeY()
             }
-    except Exception:
-        traceback.print_exc()
+    except BaseException as e:
+        _state.store_exception(e)
         return 1
     return 0
 
@@ -568,9 +605,32 @@ cdef extract_layer_geometries(lefiGeometries* geos):
 
     return geometries
 
-# Additional callback for logging warnings/errors.
+# Additional callback for logging warnings.
 cdef void log(const char* msg):
     print(msg.decode('ascii'))
+
+# Errors are collected for LefParseError instead of printed.
+cdef void error_log_cb(const char* msg) noexcept:
+    try:
+        text = msg.decode('utf-8', 'backslashreplace').strip()
+        lineno = _error_lineno(text, _state.filename_bytes)
+        if lineno is None and lefrLineNumber() > 0:
+            lineno = lefrLineNumber()
+        _state.errors.append((text, lineno))
+    except BaseException as e:
+        _state.store_exception(e)
+
+# The parser reads through this instead of fread(), so read errors raise the
+# same OSError as Python's read(). Returning 0 signals end of file.
+cdef size_t read_cb(FILE* unused, char* buf, size_t size) noexcept:
+    cdef bytes chunk
+    try:
+        chunk = _state.file.read(size)
+        memcpy(buf, <const char*> chunk, len(chunk))
+    except BaseException as e:
+        _state.store_exception(e)
+        return 0
+    return len(chunk)
 
 # This is the module's main entry point and the single Python function exposed
 # by this module.
@@ -578,10 +638,16 @@ def parse(path):
     ''' See leflib/__init__.py for full docstring. We put it there to ensure
     it's picked up by Sphinx.'''
 
+    cdef int r = -1
+
     _state.clear()
 
+    path = os.fspath(path)
+    # Use this to pass path to C++ functions
+    path_bytes = os.fsencode(path)
+
     if lefrInit() != 0:
-        return None
+        raise RuntimeError('Failed to initialize the LEF parser')
 
     lefrSetVersionCbk(version_cb)
     lefrSetBusBitCharsCbk(busbit_chars_cb)
@@ -600,23 +666,27 @@ def parse(path):
     lefrSetObstructionCbk(obs_cb)
     lefrSetMacroCbk(macro_cb)
 
-    lefrSetLogFunction(log)
+    lefrSetLogFunction(error_log_cb)
     lefrSetWarningLogFunction(log)
+    lefrSetReadFunction(read_cb)
 
-    # Use this to pass path to C++ functions
-    path_bytes = path.encode('ascii')
+    _state.filename_bytes = path_bytes
 
-    f_ptr = fopen(path_bytes, 'r')
-    if f_ptr == NULL:
-        print("Couldn't open file " + path)
-        return None
+    with open(path, 'rb') as f:
+        _state.file = f
+        r = lefrRead(NULL, path_bytes, NULL)
+        _state.file = None
 
-    r = lefrRead(f_ptr, path_bytes, NULL)
-
-    fclose(f_ptr)
+    # A callback's exception beats the parser errors it caused, such as
+    # "unexpected end of file" after a read error.
+    if _state.exception is not None:
+        raise _state.exception
 
     if r != 0:
-        print("Error parsing LEF!")
-        return None
+        msg, lineno = _state.errors[0] if _state.errors else ('Error parsing LEF!', None)
+        raise LefParseError(msg, path, lineno)
+
+    for msg, _ in _state.errors:
+        print(msg)
 
     return _state.data

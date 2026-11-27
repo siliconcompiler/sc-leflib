@@ -1,9 +1,82 @@
+import errno
 import os
+import pickle
+import sys
+
+import pytest
+
 import sc_leflib
 
 
-def test_leflib_garbage():
-    assert sc_leflib.parse('asdf') is None
+GOOD_LEF = """VERSION 5.8 ;
+MACRO foo
+  SIZE 1 BY 2 ;
+END foo
+END LIBRARY
+"""
+
+
+def assert_matches_open_error(error, path):
+    with pytest.raises(OSError) as expected:
+        open(os.fspath(path), 'rb')
+    assert type(error) is type(expected.value)
+    assert error.args == expected.value.args
+    assert error.filename == expected.value.filename
+
+
+def test_leflib_missing_file(tmp_path):
+    path = str(tmp_path / 'does_not_exist.lef')
+    with pytest.raises(FileNotFoundError) as excinfo:
+        sc_leflib.parse(path)
+    assert_matches_open_error(excinfo.value, path)
+
+
+@pytest.mark.skipif(sys.platform == 'win32' or os.geteuid() == 0,
+                    reason='file permissions are not enforced')
+def test_leflib_unreadable_file(tmp_path):
+    path = tmp_path / 'unreadable.lef'
+    path.write_text(GOOD_LEF)
+    path.chmod(0)
+    with pytest.raises(PermissionError) as excinfo:
+        sc_leflib.parse(path)
+    assert_matches_open_error(excinfo.value, path)
+
+
+def test_leflib_directory(tmp_path):
+    """A directory raises like open() instead of parsing as an empty LEF."""
+    with pytest.raises(OSError) as excinfo:
+        sc_leflib.parse(tmp_path)
+    assert_matches_open_error(excinfo.value, tmp_path)
+
+
+@pytest.mark.skipif(not sys.platform.startswith('linux'),
+                    reason='needs /proc/self/mem')
+def test_leflib_read_error():
+    # /proc/self/mem opens, but reading at offset 0 fails with EIO.
+    with pytest.raises(OSError) as excinfo:
+        sc_leflib.parse('/proc/self/mem')
+    assert excinfo.value.errno == errno.EIO
+
+
+def test_leflib_malformed_file(tmp_path, capfd):
+    path = tmp_path / 'bad.lef'
+    path.write_text('VERSION 5.8 ;\nMACRO foo\n  garbage here ;;\nEND bar\n')
+
+    with pytest.raises(sc_leflib.LefParseError) as excinfo:
+        sc_leflib.parse(path)
+
+    assert 'garbage' in str(excinfo.value)
+    assert excinfo.value.filename == str(path)
+    assert excinfo.value.lineno == 3
+    assert pickle.loads(pickle.dumps(excinfo.value)).lineno == 3
+    assert capfd.readouterr() == ('', '')
+
+
+def test_leflib_non_ascii_path(tmp_path):
+    path = tmp_path / 'g\u00f6\u00f6d.lef'
+    path.write_text(GOOD_LEF)
+    assert sc_leflib.parse(path) == \
+        {'version': 5.8, 'macros': {'foo': {'size': {'width': 1, 'height': 2}}}}
 
 
 def test_leflib_complete(datadir):
